@@ -1,48 +1,113 @@
-# 本音（HonNe）技術レポート — 仕組み・構造・技術スタック
+<title>本音 技術レポート</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@500;700;900&family=Noto+Sans+JP:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+:root{
+  --bg:#fbf8f4;--surface:#ffffff;--text:#1f1a17;--muted:#75695f;--line:#e7dfd6;
+  --accent:#e0455a;--accent-soft:#fbe6e9;--code-bg:#f4efe9;--code-text:#2a221c;
+  --shadow:0 8px 24px rgba(50,25,10,.08);
+  --font-body:"Noto Sans JP",system-ui,-apple-system,"Hiragino Sans",sans-serif;
+  --font-head:"Zen Kaku Gothic New","Noto Sans JP",system-ui,sans-serif;
+  --font-mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#17130f;--surface:#211b16;--text:#f2ece6;--muted:#a69b92;--line:#372e27;
+  --accent:#ff6b7d;--accent-soft:#4a2229;--code-bg:#2a231d;--code-text:#efe7df;--shadow:0 8px 24px rgba(0,0,0,.4);}}
+:root[data-theme="dark"]{
+  --bg:#17130f;--surface:#211b16;--text:#f2ece6;--muted:#a69b92;--line:#372e27;
+  --accent:#ff6b7d;--accent-soft:#4a2229;--code-bg:#2a231d;--code-text:#efe7df;--shadow:0 8px 24px rgba(0,0,0,.4);}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:15.5px;line-height:1.85;-webkit-font-smoothing:antialiased}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:1180px;margin:0 auto;padding-block:0 80px;padding-inline:20px}
+header.hero{padding-block:48px 28px;border-bottom:1px solid var(--line);margin-bottom:24px}
+.eyebrow{font-family:var(--font-mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+h1.title{font-family:var(--font-head);font-weight:900;font-size:clamp(30px,5vw,46px);letter-spacing:.02em;line-height:1.2;margin:8px 0 10px;text-wrap:balance}
+.meta{color:var(--muted);font-size:13.5px;display:flex;flex-wrap:wrap;gap:6px 18px}
+.meta b{color:var(--text);font-weight:500}
+.layout{display:grid;grid-template-columns:260px minmax(0,1fr);gap:48px;align-items:start}
+nav.toc{position:sticky;top:16px;max-height:calc(100vh - 32px);overflow:auto;padding-right:6px;font-size:13px}
+nav.toc .part{font-family:var(--font-mono);font-size:11px;letter-spacing:.12em;color:var(--muted);margin:18px 0 6px;text-transform:uppercase}
+nav.toc .part:first-child{margin-top:0}
+nav.toc a{display:flex;gap:8px;color:var(--muted);padding:4px 8px;border-radius:6px;line-height:1.45}
+nav.toc a .n{font-family:var(--font-mono);color:var(--accent);min-width:2ch;text-align:right;font-size:11.5px;padding-top:2px}
+nav.toc a:hover{background:var(--accent-soft);color:var(--text);text-decoration:none}
+nav.toc a.active{color:var(--text);font-weight:700;background:var(--accent-soft)}
+details.mtoc{display:none;border:1px solid var(--line);border-radius:12px;background:var(--surface);padding:10px 14px;margin-bottom:20px}
+details.mtoc summary{cursor:pointer;font-weight:700;font-family:var(--font-head)}
+main{max-width:78ch;min-width:0}
+main h2{font-family:var(--font-head);font-weight:900;font-size:26px;line-height:1.3;letter-spacing:.01em;margin:64px 0 16px;padding-top:18px;border-top:2px solid var(--accent);text-wrap:balance;scroll-margin-top:16px}
+main h2 .num{font-family:var(--font-mono);color:var(--accent);font-size:14px;letter-spacing:.1em;display:block;margin-bottom:6px;font-weight:600}
+main h1{font-family:var(--font-head);font-weight:900;font-size:22px;color:var(--accent);margin:80px 0 8px;letter-spacing:.02em;scroll-margin-top:16px}
+main h1+p{color:var(--muted)}
+main h3{font-family:var(--font-head);font-weight:700;font-size:18px;margin:34px 0 10px;text-wrap:balance}
+main h4{font-family:var(--font-head);font-weight:700;font-size:15.5px;margin:24px 0 8px}
+main p{margin:0 0 14px}
+main ul,main ol{padding-left:1.4em;margin:0 0 14px}
+main li{margin:4px 0}
+main li::marker{color:var(--accent)}
+main strong{font-weight:700;color:var(--text)}
+main hr{border:0;height:0;margin:0}
+main code{font-family:var(--font-mono);font-size:.86em;background:var(--code-bg);color:var(--code-text);padding:.12em .4em;border-radius:5px;border:1px solid var(--line)}
+main pre{background:var(--code-bg);border:1px solid var(--line);border-radius:12px;padding:14px 16px;overflow-x:auto;margin:0 0 18px;line-height:1.6}
+main pre code{background:none;border:0;padding:0;font-size:12.8px;color:var(--code-text)}
+.tbl{overflow-x:auto;margin:0 0 20px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+main table{border-collapse:collapse;width:100%;font-size:14px;min-width:420px}
+main th{font-family:var(--font-head);font-weight:700;text-align:left;padding:10px 12px;border-bottom:2px solid var(--line);background:var(--accent-soft);color:var(--text);white-space:nowrap}
+main td{padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+main tr:last-child td{border-bottom:0}
+main td code,main th code{white-space:nowrap}
+main blockquote{margin:0 0 16px;padding:8px 16px;border-left:3px solid var(--accent);color:var(--muted);background:var(--surface);border-radius:0 10px 10px 0}
+.lead{font-size:16.5px;color:var(--muted);margin-bottom:10px}
+.kicker{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:22px 0 0}
+.kicker div{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.kicker b{display:block;font-family:var(--font-head);font-size:22px;font-weight:900;font-variant-numeric:tabular-nums}
+.kicker span{font-size:12.5px;color:var(--muted)}
+footer{margin-top:60px;padding-top:20px;border-top:1px solid var(--line);color:var(--muted);font-size:13px}
+@media (max-width:860px){
+  .layout{grid-template-columns:1fr;gap:0}
+  nav.toc{display:none}
+  details.mtoc{display:block}
+  details.mtoc a{display:block;padding:5px 0;color:var(--text);font-size:14px}
+  details.mtoc a .n{font-family:var(--font-mono);color:var(--accent);margin-right:8px;font-size:12px}
+  main h2{font-size:22px;margin-top:48px}
+  header.hero{padding-block:32px 20px}
+}
+</style>
 
-最終更新: 2026-09-15 ／ 対象コミット: `1086b9d`
+<div class="wrap">
+<header class="hero">
+  <div class="eyebrow">HonNe · Technical Report</div>
+  <h1 class="title">本音 技術レポート</h1>
+  <p class="lead">仕組み・構造・技術スタックを、コードに沿って上から下まで。</p>
+  <div class="meta"><span>最終更新 <b>2026-09-15</b></span><span>対象コミット <b>1086b9d</b></span><span>全 <b>33 章</b></span></div>
+  <div class="kicker">
+    <div><b>775</b><span>質問（日英併記）</span></div>
+    <div><b>12</b><span>デッキ（恋人 6 / 友達 6）</span></div>
+    <div><b>8</b><span>質問形式</span></div>
+    <div><b>176 KB</b><span>本番 JS（gzip）</span></div>
+    <div><b>0</b><span>型エラー / Lint 警告</span></div>
+  </div>
+</header>
 
+<div class="layout">
+  <nav class="toc" id="toc" aria-label="目次"></nav>
+  <div>
+    <details class="mtoc"><summary>目次</summary><div id="mtoc"></div></details>
+    <main id="content"></main>
+    <footer>本音（HonNe）技術レポート ・ ソース: docs/03_technical_report.md</footer>
+  </div>
+</div>
+</div>
+
+<script type="text/markdown" id="src">
 このドキュメントは「本音」がどのように動いているかを、初めてコードを読む人にも分かるように、上から下まで順に説明したものです。**第 I 部（1〜20 章）**は全体像・各モジュールの役割・検証内容・制約と拡張方法、**第 II 部（21〜32 章）**は TypeScript の設定と型の使い方、モジュール依存、起動シーケンス、コンポーネント間のデータの流れ、主要関数の逐行解説、ビルドの内側まで、コードに沿って掘り下げます。
 
 ---
 
-## 目次
-
-1. [アプリの概要](#1-アプリの概要)
-2. [技術スタック](#2-技術スタック)
-3. [全体アーキテクチャ](#3-全体アーキテクチャ)
-4. [ディレクトリ構成](#4-ディレクトリ構成)
-5. [データモデル](#5-データモデル)
-6. [コンテンツ（質問データ）の仕組み](#6-コンテンツ質問データの仕組み)
-7. [画面と遷移（ルーティング）](#7-画面と遷移ルーティング)
-8. [セッションの流れ](#8-セッションの流れ)
-9. [出題アルゴリズム](#9-出題アルゴリズム)
-10. [指名（ターン）ロジック](#10-指名ターンロジック)
-11. [カード UI とスワイプ](#11-カード-ui-とスワイプ)
-12. [質問形式ウィジェット](#12-質問形式ウィジェット)
-13. [状態管理と永続化](#13-状態管理と永続化)
-14. [スタイリングとレスポンシブ・ダークモード](#14-スタイリングとレスポンシブダークモード)
-15. [PWA（オフライン・ホーム画面追加）](#15-pwaオフラインホーム画面追加)
-16. [ビルド・品質チェック・デプロイ](#16-ビルド品質チェックデプロイ)
-17. [テストと検証の記録](#17-テストと検証の記録)
-18. [設計上の判断とトレードオフ](#18-設計上の判断とトレードオフ)
-19. [既知の制約と注意点](#19-既知の制約と注意点)
-20. [拡張ガイド](#20-拡張ガイド)
-21. [TypeScript の設定（tsconfig）を読む](#21-typescript-の設定tsconfigを読む)
-22. [型システムの使い方](#22-型システムの使い方--typests-を軸に)
-23. [モジュール依存グラフ](#23-モジュール依存グラフ)
-24. [起動シーケンス](#24-起動シーケンスブラウザで開いてから最初の画面まで)
-25. [コンポーネントツリーと props の流れ](#25-コンポーネントツリーと-props-の流れ)
-26. [React フックの使い分け](#26-react-フックの使い分けsessiontsx-を教材に)
-27. [advance の逐行解説](#27-advance--1-枚進める処理の逐行解説)
-28. [buildQueue の型と不変条件](#28-buildqueue-の型と不変条件)
-29. [ストアの型設計](#29-ストアの型設計storets)
-30. [ビルドパイプラインの内側](#30-ビルドパイプラインの内側)
-31. [実行時のイベントフロー](#31-実行時のイベントフロー例-どっち派カードで-4-人が答える)
-32. [コードを読む順番](#32-コードを読む順番おすすめ)
-33. [用語集](#33-用語集)
-
----
 
 ## 1. アプリの概要
 
@@ -202,7 +267,7 @@ HonNe/
 
 ## 5. データモデル
 
-すべて [src/types.ts](../src/types.ts) に定義。
+すべて `src/types.ts` に定義。
 
 ### Card（1 枚の質問）
 
@@ -298,7 +363,7 @@ Profile { mode, names[2], friends[], showEnglish, adult, onboarded }
 
 ### 読み込み方法
 
-[src/content/index.ts](../src/content/index.ts) が Vite の `import.meta.glob` で `decks/*/*.json` を **ビルド時に** 一括取り込みします。ファイルを追加するだけでデッキが増え、登録作業は不要です。
+`src/content/index.ts` が Vite の `import.meta.glob` で `decks/*/*.json` を **ビルド時に** 一括取り込みします。ファイルを追加するだけでデッキが増え、登録作業は不要です。
 
 ```ts
 const modules = import.meta.glob<Deck>('./decks/*/*.json', { eager: true, import: 'default' })
@@ -309,7 +374,7 @@ export const DECKS = Object.keys(modules).sort().map((k) => modules[k])   // フ
 
 ### 品質を守る仕組み — `npm run validate`
 
-[scripts/validate-content.mjs](../scripts/validate-content.mjs) が以下を検査し、1 件でも問題があれば終了コード 1 で失敗します。
+`scripts/validate-content.mjs` が以下を検査し、1 件でも問題があれば終了コード 1 で失敗します。
 
 - ID の重複／`<deckId>_` で始まっているか
 - `type` が 8 種のいずれか、`level` が 1〜4
@@ -334,13 +399,13 @@ export const DECKS = Object.keys(modules).sort().map((k) => modules[k])   // フ
 
 ### ラベル辞書
 
-[src/content/themes.ts](../src/content/themes.ts) にテーマ（16 種）、レベル（4 段階）、形式（8 種）、モードの日英ラベルを集約。UI はここから表示名を引くので、キーを変えずに表記だけ変えられます。
+`src/content/themes.ts` にテーマ（16 種）、レベル（4 段階）、形式（8 種）、モードの日英ラベルを集約。UI はここから表示名を引くので、キーを変えずに表記だけ変えられます。
 
 ---
 
 ## 7. 画面と遷移（ルーティング）
 
-[src/App.tsx](../src/App.tsx) の `HashRouter` で定義。
+`src/App.tsx` の `HashRouter` で定義。
 
 | パス | 画面 | 役割 |
 |---|---|---|
@@ -375,7 +440,7 @@ Home ◀─▶ Library ◀─▶ Settings   （下部ナビで相互移動）
 
 ## 8. セッションの流れ
 
-[src/pages/Session.tsx](../src/pages/Session.tsx) が中心。1 セッションのライフサイクルは次の通りです。
+`src/pages/Session.tsx` が中心。1 セッションのライフサイクルは次の通りです。
 
 ```
 DeckSetup「はじめる」
@@ -421,7 +486,7 @@ finish()  … updateSession({ endedAt, ...stats }) → nav('/summary', { state: 
 
 ## 9. 出題アルゴリズム
 
-[src/session/build.ts](../src/session/build.ts) の `buildQueue`。React に依存しない純関数です。
+`src/session/build.ts` の `buildQueue`。React に依存しない純関数です。
 
 ### 手順
 
@@ -463,7 +528,7 @@ DeckSetup の「条件に合うカード N 枚（うち既出 M 枚）」表示�
 
 ## 10. 指名（ターン）ロジック
 
-[src/session/people.ts](../src/session/people.ts)。
+`src/session/people.ts`。
 
 ### `participants(mode, names, friends)` — 誰が参加しているか
 
@@ -496,7 +561,7 @@ for 各カード i:
 
 ## 11. カード UI とスワイプ
 
-[src/components/QuestionCard.tsx](../src/components/QuestionCard.tsx)。
+`src/components/QuestionCard.tsx`。
 
 ### 構造
 
@@ -546,7 +611,7 @@ const swipe = (dir) => {
 
 ## 12. 質問形式ウィジェット
 
-[src/components/Widgets.tsx](../src/components/Widgets.tsx)。すべて `WidgetProps { card, people, turn, showEnglish, onValues, onResult }` を受け取ります。
+`src/components/Widgets.tsx`。すべて `WidgetProps { card, people, turn, showEnglish, onValues, onResult }` を受け取ります。
 
 | 形式 | コンポーネント | 動き | 保存されるもの |
 |---|---|---|---|
@@ -565,7 +630,7 @@ const swipe = (dir) => {
 
 ## 13. 状態管理と永続化
 
-[src/store.ts](../src/store.ts)。zustand の `create` + `persist`。
+`src/store.ts`。zustand の `create` + `persist`。
 
 ### ストアの形
 
@@ -605,7 +670,7 @@ Settings の「すべてのデータを削除」は `clearAll()` で初期状態
 
 ## 14. スタイリングとレスポンシブ・ダークモード
 
-[src/index.css](../src/index.css) 1 ファイル。
+`src/index.css` 1 ファイル。
 
 ### デザイントークン
 
@@ -646,7 +711,7 @@ Settings の「すべてのデータを削除」は `clearAll()` で初期状態
 
 ## 15. PWA（オフライン・ホーム画面追加）
 
-[vite.config.ts](../vite.config.ts) の `VitePWA` で設定。
+`vite.config.ts` の `VitePWA` で設定。
 
 - **manifest**: 名前「本音 - 質問カード」、`display: standalone`（ホーム画面から開くとブラウザ UI なし）、テーマ色、アイコン 3 種（SVG / 192 / 512）。
 - **Service Worker**: Workbox の precache。ビルド成果物（HTML / JS / CSS / アイコン）をすべてキャッシュするため、一度開けば圏外でも起動・全機能が使えます。
@@ -862,7 +927,7 @@ import type { AnswerRecord, SessionConfig } from '../types'
 
 ## 22. 型システムの使い方 — `types.ts` を軸に
 
-[src/types.ts](../src/types.ts) は 68 行ですが、アプリ全体の「語彙」を決めています。使われている TypeScript の機能を順に見ます。
+`src/types.ts` は 68 行ですが、アプリ全体の「語彙」を決めています。使われている TypeScript の機能を順に見ます。
 
 ### 22.1 文字列リテラルの Union 型（列挙の代わり）
 
@@ -1280,14 +1345,14 @@ npm run build
 
 ## 32. コードを読む順番（おすすめ）
 
-1. [types.ts](../src/types.ts) — 語彙を覚える（5 分）
-2. [content/index.ts](../src/content/index.ts) と 1 つのデッキ JSON — データの入口
-3. [session/build.ts](../src/session/build.ts) → [session/people.ts](../src/session/people.ts) — 純ロジック
-4. [store.ts](../src/store.ts) — 何が保存されるか
-5. [App.tsx](../src/App.tsx) → [pages/Home.tsx](../src/pages/Home.tsx) → [pages/DeckSetup.tsx](../src/pages/DeckSetup.tsx) — 画面の流れ
-6. [pages/Session.tsx](../src/pages/Session.tsx) — 中核
-7. [components/QuestionCard.tsx](../src/components/QuestionCard.tsx) → [components/Widgets.tsx](../src/components/Widgets.tsx) — 操作の実装
-8. [index.css](../src/index.css) — 見た目
+1. `types.ts` — 語彙を覚える（5 分）
+2. `content/index.ts` と 1 つのデッキ JSON — データの入口
+3. `session/build.ts` → `session/people.ts` — 純ロジック
+4. `store.ts` — 何が保存されるか
+5. `App.tsx` → `pages/Home.tsx` → `pages/DeckSetup.tsx` — 画面の流れ
+6. `pages/Session.tsx` — 中核
+7. `components/QuestionCard.tsx` → `components/Widgets.tsx` — 操作の実装
+8. `index.css` — 見た目
 
 ---
 
@@ -1308,3 +1373,51 @@ npm run build
 | Service Worker | ブラウザ内でファイルをキャッシュし、オフライン起動を可能にする仕組み |
 | zustand | 軽量な状態管理ライブラリ |
 | framer-motion | React 向けアニメーション／ジェスチャーライブラリ |
+
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script>
+(function(){
+  var md = document.getElementById('src').textContent;
+  marked.use({ gfm: true, breaks: false });
+  var main = document.getElementById('content');
+  main.innerHTML = marked.parse(md);
+
+  main.querySelectorAll('table').forEach(function(t){
+    var w = document.createElement('div'); w.className = 'tbl';
+    t.parentNode.insertBefore(w, t); w.appendChild(t);
+  });
+
+  var toc = document.getElementById('toc'), mtoc = document.getElementById('mtoc');
+  var p1 = document.createElement('div'); p1.className='part'; p1.textContent='第 I 部 · 全体像'; toc.appendChild(p1);
+  var links = [];
+  main.querySelectorAll('h1, h2').forEach(function(h, i){
+    var text = h.textContent.trim();
+    if (h.tagName === 'H1') {
+      h.id = 'part-2';
+      var p = document.createElement('div'); p.className='part'; p.textContent='第 II 部 · コードで読む'; toc.appendChild(p);
+      return;
+    }
+    var m = text.match(/^(\d+)\.\s*(.*)$/);
+    var num = m ? m[1] : '', label = m ? m[2] : text;
+    h.id = 'c' + (num || i);
+    var inner = h.innerHTML.replace(/^\s*\d+\.\s*/, '');
+    h.innerHTML = '<span class="num">CHAPTER ' + num + '</span>' + inner;
+    var short = label.replace(/\s*[—―(（].*$/, '').trim();
+    var a = document.createElement('a'); a.href = '#' + h.id;
+    a.innerHTML = '<span class="n">' + num + '</span><span></span>';
+    a.lastChild.textContent = short;
+    toc.appendChild(a); mtoc.appendChild(a.cloneNode(true));
+    links.push({ a: a, h: h });
+  });
+
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){ if (e.isIntersecting) {
+        links.forEach(function(l){ l.a.classList.toggle('active', l.h === e.target); });
+      }});
+    }, { rootMargin: '-10% 0px -80% 0px' });
+    links.forEach(function(l){ io.observe(l.h); });
+  }
+})();
+</script>
