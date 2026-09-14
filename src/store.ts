@@ -6,6 +6,7 @@ interface Profile {
   onboarded: boolean
   mode: Mode
   names: [string, string] // 恋人モードで使う2人の名前
+  friends: string[] // 友達モードの参加者（2〜8人）
   showEnglish: boolean
   adult: boolean // 16+ カードを出す
 }
@@ -32,6 +33,7 @@ const initial = {
     onboarded: false,
     mode: 'couple' as Mode,
     names: ['', ''] as [string, string],
+    friends: [] as string[],
     showEnglish: true,
     adult: false,
   },
@@ -77,6 +79,13 @@ export const useStore = create<State>()(
         })),
       clearAll: () => set({ ...initial }),
     }),
-    { name: 'honne-v1' },
+    {
+      name: 'honne-v1',
+      // 旧バージョンの保存データに friends がない場合の補完
+      merge: (persisted, current) => {
+        const p = (persisted ?? {}) as Partial<State>
+        return { ...current, ...p, profile: { ...current.profile, ...(p.profile ?? {}) } }
+      },
+    },
   ),
 )

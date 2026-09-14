@@ -1,3 +1,4 @@
+import { FriendsEditor } from '../components/FriendsEditor'
 import { DECKS } from '../content'
 import { useStore } from '../store'
 import { BottomNav } from './Home'
@@ -32,6 +33,11 @@ export default function Settings() {
             onChange={(e) => setProfile({ names: [profile.names[0], e.target.value] })}
           />
         </div>
+      </div>
+
+      <div className="section stack">
+        <h4>友達モードの参加者</h4>
+        <FriendsEditor value={profile.friends} onChange={(friends) => setProfile({ friends })} />
       </div>
 
       <div className="section stack">

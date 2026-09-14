@@ -453,9 +453,12 @@ a {
 }
 .opt .who {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   gap: 4px;
 }
 .who span {
+  white-space: nowrap;
   font-size: 11px;
   padding: 2px 8px;
   border-radius: 999px;
@@ -550,6 +553,13 @@ a {
   background: var(--deck);
   border-color: var(--deck);
   color: #fff;
+}
+.pickers button.done {
+  border-color: var(--deck);
+  color: var(--deck);
+}
+.pickers {
+  flex-wrap: wrap;
 }
 
 /* ---------- forms ---------- */

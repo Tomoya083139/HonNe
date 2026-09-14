@@ -1,6 +1,6 @@
 import { forwardRef, useImperativeHandle, useState } from 'react'
 import { animate, motion, useMotionValue, useTransform } from 'framer-motion'
-import type { Card, Deck, Mode } from '../types'
+import type { Card, Deck } from '../types'
 import { LEVEL_LABEL, TYPE_LABEL } from '../content/themes'
 import {
   ActionWidget,
@@ -26,8 +26,8 @@ const TYPE_ICON: Record<string, string> = {
 interface Props {
   card: Card
   deck: Deck
-  mode: Mode
-  names: [string, string]
+  people: string[]
+  turn: string
   showEnglish: boolean
   favorite: boolean
   onToggleFavorite: () => void
@@ -62,8 +62,8 @@ export const QuestionCard = forwardRef<QuestionCardHandle, Props>(function Quest
 
   const widgetProps: WidgetProps = {
     card: p.card,
-    mode: p.mode,
-    names: p.names,
+    people: p.people,
+    turn: p.turn,
     showEnglish: p.showEnglish,
     onValues: p.onValues,
     onResult: p.onResult,

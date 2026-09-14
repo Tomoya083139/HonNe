@@ -1,26 +1,21 @@
 import { useEffect, useState } from 'react'
-import type { Card, Mode } from '../types'
-
-/** 恋人モードは2人の名前、友達モードは「あなた / 相手」 */
-export function personLabels(mode: Mode, names: [string, string]): [string, string] {
-  if (mode === 'couple') return [names[0] || 'あなた', names[1] || '相手']
-  return ['あなた', '相手']
-}
+import type { Card } from '../types'
 
 export interface WidgetProps {
   card: Card
-  mode: Mode
-  names: [string, string]
+  /** 参加者名（恋人モードは2人、友達モードは2〜8人） */
+  people: string[]
+  /** このカードで指名された人（当てっこの回答者など） */
+  turn: string
   showEnglish: boolean
   onValues: (values: string[]) => void
   onResult: (r: 'hit' | 'miss') => void
 }
 
-/** 二択・三択: 2人がそれぞれ選び、一致したら表示 */
-export function ChoiceWidget({ card, mode, names, showEnglish, onValues }: WidgetProps) {
+/** どっち派？: 全員がそれぞれ選び、多数派 / 少数派を表示 */
+export function ChoiceWidget({ card, people, showEnglish, onValues }: WidgetProps) {
   const [who, setWho] = useState(0)
-  const [picks, setPicks] = useState<(number | null)[]>([null, null])
-  const labels = personLabels(mode, names)
+  const [picks, setPicks] = useState<(number | null)[]>(people.map(() => null))
   const opts = card.options ?? []
 
   const pick = (i: number) => {
@@ -28,14 +23,30 @@ export function ChoiceWidget({ card, mode, names, showEnglish, onValues }: Widge
     next[who] = i
     setPicks(next)
     onValues(next.map((p) => (p == null ? '' : opts[p].ja)))
-    if (who === 0 && next[1] == null) setWho(1)
+    // まだ選んでいない人へ自動で移る
+    const rest = next.findIndex((p, k) => p == null && k !== who)
+    if (rest >= 0) setWho(rest)
   }
-  const done = picks[0] != null && picks[1] != null
+  const done = picks.every((p) => p != null)
+
+  const verdict = () => {
+    if (people.length === 2) {
+      return picks[0] === picks[1] ? '一致！同じ派でした 🎉' : '違う派！理由を聞いてみよう 👀'
+    }
+    const tally = new Map<number, string[]>()
+    picks.forEach((p, k) => tally.set(p!, [...(tally.get(p!) ?? []), people[k]]))
+    if (tally.size === 1) return '全員一致！🎉'
+    const sorted = [...tally.entries()].sort((a, b) => b[1].length - a[1].length)
+    const [topIdx, topNames] = sorted[0]
+    const minority = sorted.slice(1).flatMap(([, n]) => n)
+    return `多数派は「${opts[topIdx].ja}」(${topNames.length}人)。少数派の ${minority.join('・')} に理由を聞こう 👀`
+  }
+
   return (
     <div className="widget">
       <div className="pickers">
-        {labels.map((l, i) => (
-          <button key={i} className={who === i ? 'on' : ''} onClick={() => setWho(i)}>
+        {people.map((l, i) => (
+          <button key={i} className={who === i ? 'on' : picks[i] != null ? 'done' : ''} onClick={() => setWho(i)}>
             {l}
           </button>
         ))}
@@ -48,34 +59,31 @@ export function ChoiceWidget({ card, mode, names, showEnglish, onValues }: Widge
               {showEnglish && <span className="muted small"> / {o.en}</span>}
             </span>
             <span className="who">
-              {picks.map((p, pi) => (p === i ? <span key={pi}>{labels[pi]}</span> : null))}
+              {picks.map((p, pi) => (p === i ? <span key={pi}>{people[pi]}</span> : null))}
             </span>
           </button>
         ))}
       </div>
-      {done && (
-        <div className="match">
-          {picks[0] === picks[1] ? '一致！同じ派でした 🎉' : '違う派！理由を聞いてみよう 👀'}
-        </div>
-      )}
+      {done && <div className="match">{verdict()}</div>}
     </div>
   )
 }
 
-/** せーの: 2人が書いてから同時公開 */
-export function RevealWidget({ mode, names, onValues }: WidgetProps) {
-  const [vals, setVals] = useState(['', ''])
+/** せーの: 全員が書いてから同時公開 */
+export function RevealWidget({ people, onValues }: WidgetProps) {
+  const [vals, setVals] = useState(people.map(() => ''))
   const [open, setOpen] = useState(false)
-  const labels = personLabels(mode, names)
   const set = (i: number, v: string) => {
     const next = vals.slice()
     next[i] = v
     setVals(next)
     onValues(next)
   }
+  const filled = vals.filter((v) => v.trim())
+  const allSame = filled.length >= 2 && filled.every((v) => v.trim() === filled[0].trim())
   return (
     <div className="widget">
-      {labels.map((l, i) => (
+      {people.map((l, i) => (
         <div className="person-row" key={i}>
           <label>{l}</label>
           <input
@@ -92,70 +100,69 @@ export function RevealWidget({ mode, names, onValues }: WidgetProps) {
         className="btn"
         style={{ background: 'var(--deck)', color: '#fff' }}
         onClick={() => setOpen((o) => !o)}
-        disabled={!vals[0] && !vals[1]}
+        disabled={filled.length === 0}
       >
         {open ? '隠す' : 'せーの！で公開'}
       </button>
-      {open && vals[0] && vals[1] && (
-        <div className="match">
-          {vals[0].trim() === vals[1].trim() ? 'まさかの一致！' : 'お互いの答え、どう思った？'}
-        </div>
+      {open && filled.length >= 2 && (
+        <div className="match">{allSame ? 'まさかの全員一致！' : 'お互いの答え、どう思った？'}</div>
       )}
     </div>
   )
 }
 
 /** 10点満点 */
-export function ScaleWidget({ mode, names, onValues }: WidgetProps) {
-  const [vals, setVals] = useState([5, 5])
-  const labels = personLabels(mode, names)
+export function ScaleWidget({ people, onValues }: WidgetProps) {
+  const [vals, setVals] = useState(people.map(() => 5))
   const set = (i: number, v: number) => {
     const next = vals.slice()
     next[i] = v
     setVals(next)
     onValues(next.map(String))
   }
+  const max = Math.max(...vals)
+  const min = Math.min(...vals)
+  const verdict =
+    max - min <= 1
+      ? 'ほぼ同じ感覚'
+      : people.length === 2
+        ? `${max - min} 点差。なぜ違う？`
+        : `最高 ${max}（${people[vals.indexOf(max)]}）／ 最低 ${min}（${people[vals.indexOf(min)]}）。差は ${max - min} 点`
   return (
     <div className="widget">
-      {labels.map((l, i) => (
+      {people.map((l, i) => (
         <div className="person-row" key={i}>
           <label>{l}</label>
-          <input
-            type="range"
-            min={1}
-            max={10}
-            value={vals[i]}
-            onChange={(e) => set(i, Number(e.target.value))}
-          />
+          <input type="range" min={1} max={10} value={vals[i]} onChange={(e) => set(i, Number(e.target.value))} />
           <output>{vals[i]}</output>
         </div>
       ))}
-      <div className="match">
-        {Math.abs(vals[0] - vals[1]) <= 1 ? 'ほぼ同じ感覚' : `${Math.abs(vals[0] - vals[1])} 点差。なぜ違う？`}
-      </div>
+      <div className="match">{verdict}</div>
     </div>
   )
 }
 
-/** 当てっこ: 相手の答えを予想 → 正解/不正解 */
-export function GuessWidget({ mode, names, onResult }: WidgetProps) {
+/** 当てっこ: 指名された人の答えをみんなで予想 → 本人が発表 */
+export function GuessWidget({ people, turn, onResult }: WidgetProps) {
   const [r, setR] = useState<'hit' | 'miss' | null>(null)
-  const labels = personLabels(mode, names)
   const choose = (v: 'hit' | 'miss') => {
     setR(v)
     onResult(v)
   }
+  const others = people.filter((p) => p !== turn)
   return (
     <div className="widget">
       <p className="small muted" style={{ margin: 0 }}>
-        {labels[0]}が予想して答える → {labels[1]}が正解を発表
+        {people.length === 2
+          ? `${others[0]}が予想して答える → ${turn}が正解を発表`
+          : `みんなで ${turn} の答えを予想 → ${turn} が正解を発表`}
       </p>
       <div className="result-btns">
         <button className={r === 'hit' ? 'on' : ''} onClick={() => choose('hit')}>
-          ⭕ 当たり
+          ⭕ {people.length === 2 ? '当たり' : '誰か当てた'}
         </button>
         <button className={r === 'miss' ? 'on' : ''} onClick={() => choose('miss')}>
-          ❌ はずれ
+          ❌ {people.length === 2 ? 'はずれ' : '全員はずれ'}
         </button>
       </div>
     </div>
@@ -205,7 +212,7 @@ export function MemoWidget({ value, onChange }: { value: string; onChange: (v: s
   return (
     <textarea
       className="memo"
-      placeholder="2人の答えをメモ（あとで振り返れます）"
+      placeholder="みんなの答えをメモ（あとで振り返れます）"
       value={value}
       onChange={(e) => onChange(e.target.value)}
     />

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { FriendsEditor } from '../components/FriendsEditor'
 import { useStore } from '../store'
 import type { Mode } from '../types'
 
@@ -17,9 +18,10 @@ export default function Onboarding() {
   const [mode, setMode] = useState<Mode>('couple')
   const [a, setA] = useState('')
   const [b, setB] = useState('')
+  const [friends, setFriends] = useState<string[]>(['', '', ''])
 
   const finish = () => {
-    setProfile({ onboarded: true, mode, names: [a.trim(), b.trim()] })
+    setProfile({ onboarded: true, mode, names: [a.trim(), b.trim()], friends: friends.map((n) => n.trim()) })
     nav('/home', { replace: true })
   }
 
@@ -27,7 +29,7 @@ export default function Onboarding() {
     <div className="shell">
       <div className="hero">
         <div className="logo">本音</div>
-        <p>2人で、ちゃんと話す時間をつくる。</p>
+        <p>恋人と、友達と。ちゃんと話す時間をつくる。</p>
       </div>
 
       {step === 0 && (
@@ -77,6 +79,12 @@ export default function Onboarding() {
               <p className="small muted" style={{ margin: 0 }}>
                 名前はこの端末の中だけに保存されます。
               </p>
+            </div>
+          )}
+          {mode === 'friends' && (
+            <div className="section stack">
+              <h4>参加者の名前（ニックネームでOK・任意）</h4>
+              <FriendsEditor value={friends} onChange={setFriends} />
             </div>
           )}
           <button className="btn primary block" onClick={finish}>
