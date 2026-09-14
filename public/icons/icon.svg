@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="110" fill="#e0455a"/>
+  <path d="M0 330 C90 300 130 230 220 250 C310 270 360 200 512 210 L512 512 L0 512 Z" fill="#ffffff" opacity="0.95"/>
+  <text x="256" y="200" text-anchor="middle" font-family="Hiragino Sans, Noto Sans JP, sans-serif" font-size="150" font-weight="900" fill="#ffffff">本音</text>
+</svg>
