@@ -293,7 +293,7 @@ a {
 .cardarea {
   position: relative;
   flex: 1;
-  min-height: 460px;
+  min-height: 400px;
   margin: 8px 20px;
 }
 .card {

@@ -1,4 +1,4 @@
-import { useLocation, useNavigate } from 'react-router-dom'
+import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { findCard, findDeck } from '../content'
 import { useStore } from '../store'
 
@@ -9,10 +9,7 @@ export default function Summary() {
   const answers = useStore((s) => s.answers)
   const deck = findDeck(session?.deckId ?? '')
 
-  if (!session || !deck) {
-    nav('/home', { replace: true })
-    return null
-  }
+  if (!session || !deck) return <Navigate to="/home" replace />
   const memos = answers.filter(
     (a) => a.deckId === deck.id && a.at >= session.startedAt && (!session.endedAt || a.at <= session.endedAt),
   )

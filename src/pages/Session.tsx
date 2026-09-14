@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { QuestionCard, type QuestionCardHandle } from '../components/QuestionCard'
 import { findDeck } from '../content'
 import { buildQueue } from '../session/build'
@@ -51,10 +51,7 @@ export default function Session() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  if (!deck || !cfg) {
-    nav('/home', { replace: true })
-    return null
-  }
+  if (!deck || !cfg) return <Navigate to="/home" replace />
 
   const card = queue[idx]
   const next = queue[idx + 1]
