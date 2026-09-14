@@ -69,8 +69,31 @@ export function ChoiceWidget({ card, people, showEnglish, onValues }: WidgetProp
   )
 }
 
+/** せーので指さし: 3・2・1 のカウントダウンだけ出す */
+export function PointWidget() {
+  const [n, setN] = useState<number | null>(null)
+  useEffect(() => {
+    if (n == null || n === 0) return
+    const t = setTimeout(() => setN(n - 1), 700)
+    return () => clearTimeout(t)
+  }, [n])
+  return (
+    <div className="widget">
+      <div className="countdown">{n == null ? '👉' : n > 0 ? n : 'せーの！'}</div>
+      <button className="btn" style={{ background: 'var(--deck)', color: '#fff' }} onClick={() => setN(3)}>
+        {n === 0 ? 'もう一回' : 'カウントダウン'}
+      </button>
+    </div>
+  )
+}
+
 /** せーの: 全員が書いてから同時公開 */
-export function RevealWidget({ people, onValues }: WidgetProps) {
+export function RevealWidget({ card, people, onValues }: WidgetProps) {
+  if (card.text.ja.includes('指さし')) return <PointWidget />
+  return <RevealInputs people={people} onValues={onValues} />
+}
+
+function RevealInputs({ people, onValues }: Pick<WidgetProps, 'people' | 'onValues'>) {
   const [vals, setVals] = useState(people.map(() => ''))
   const [open, setOpen] = useState(false)
   const set = (i: number, v: string) => {

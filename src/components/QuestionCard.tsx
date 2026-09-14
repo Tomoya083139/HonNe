@@ -124,9 +124,10 @@ export const QuestionCard = forwardRef<QuestionCardHandle, Props>(function Quest
         )}
         <p className="q">{p.card.text.ja}</p>
         {p.showEnglish && <p className="en">{p.card.text.en}</p>}
-        {!p.back && widget}
         {!p.back && (
-          <>
+          // ウィジェット内の操作（スライダー・入力）でカードのドラッグが始まらないようにする
+          <div className="interact" onPointerDownCapture={(e) => e.stopPropagation()}>
+            {widget}
             {showMemo ? (
               <MemoWidget value={p.memo} onChange={p.onMemo} />
             ) : (
@@ -134,7 +135,7 @@ export const QuestionCard = forwardRef<QuestionCardHandle, Props>(function Quest
                 ✏️ メモを残す
               </button>
             )}
-          </>
+          </div>
         )}
         <div className="logo">本音</div>
       </div>

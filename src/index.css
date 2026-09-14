@@ -38,6 +38,7 @@ body {
 }
 body {
   margin: 0;
+  -webkit-tap-highlight-color: transparent;
   background: var(--bg);
   color: var(--text);
   font-family: var(--font);
@@ -309,8 +310,9 @@ a {
   user-select: none;
 }
 .card .wave {
-  height: 30%;
-  min-height: 130px;
+  height: 22%;
+  min-height: 96px;
+  max-height: 150px;
   background: var(--deck);
   position: relative;
   flex: none;
@@ -325,11 +327,21 @@ a {
 }
 .card .body {
   flex: 1;
-  padding: 8px 26px 20px;
+  padding: 8px 22px 16px;
   display: flex;
   flex-direction: column;
   gap: 12px;
   overflow-y: auto;
+  overscroll-behavior: contain;
+  /* スクロールできるときだけ上下に影を出す（background-attachment: local の技法） */
+  background:
+    linear-gradient(var(--surface) 30%, transparent) center top,
+    linear-gradient(transparent, var(--surface) 70%) center bottom,
+    radial-gradient(farthest-side at 50% 0, rgba(0, 0, 0, 0.14), transparent) center top,
+    radial-gradient(farthest-side at 50% 100%, rgba(0, 0, 0, 0.14), transparent) center bottom;
+  background-repeat: no-repeat;
+  background-size: 100% 28px, 100% 28px, 100% 12px, 100% 12px;
+  background-attachment: local, local, scroll, scroll;
 }
 .card .badge {
   display: inline-flex;
@@ -361,8 +373,16 @@ a {
   font-weight: 900;
   letter-spacing: 0.35em;
   color: var(--deck);
-  font-size: 18px;
-  padding-top: 12px;
+  font-size: 14px;
+  padding-top: 8px;
+  opacity: 0.8;
+}
+.countdown {
+  font-size: 56px;
+  font-weight: 900;
+  text-align: center;
+  color: var(--deck);
+  line-height: 1.1;
 }
 .card .lv {
   position: absolute;
@@ -494,6 +514,15 @@ a {
 .person-row input[type='range'] {
   flex: 1;
   accent-color: var(--deck);
+  touch-action: none;
+}
+.card .interact {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  touch-action: pan-y;
+  user-select: text;
+  -webkit-user-select: text;
 }
 .person-row output {
   min-width: 28px;

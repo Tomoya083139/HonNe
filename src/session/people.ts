@@ -4,7 +4,14 @@ import type { Card, Mode } from '../types'
 export function participants(mode: Mode, names: [string, string], friends: string[]): string[] {
   if (mode === 'couple') return [names[0] || 'あなた', names[1] || '相手']
   const list = friends.map((n) => n.trim()).filter(Boolean)
-  return list.length >= 2 ? list : ['あなた', '相手']
+  if (list.length < 2) return ['あなた', '相手']
+  // 同名がいると指名や集計で区別できないので番号を付ける
+  const count = new Map<string, number>()
+  return list.map((n) => {
+    const k = (count.get(n) ?? 0) + 1
+    count.set(n, k)
+    return k === 1 ? n : `${n}${k}`
+  })
 }
 
 export interface Turn {

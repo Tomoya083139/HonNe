@@ -42,6 +42,11 @@ export default function Session() {
   const stats = useRef({ answered: 0, passed: 0, hits: 0, misses: 0 })
   const sessionId = useRef(`${Date.now()}`)
   const cardRef = useRef<QuestionCardHandle>(null)
+  const finished = useRef(false)
+  const closeIfAbandoned = () => {
+    if (finished.current) return
+    updateSession(sessionId.current, { endedAt: new Date().toISOString(), ...stats.current })
+  }
 
   useEffect(() => {
     if (!deck) return
@@ -55,6 +60,8 @@ export default function Session() {
       hits: 0,
       misses: 0,
     })
+    // 終了ボタンを押さずに離れた場合も、ここまでの結果を記録しておく
+    return () => closeIfAbandoned()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -64,6 +71,7 @@ export default function Session() {
   const next = queue[idx + 1]
 
   const finish = () => {
+    finished.current = true
     updateSession(sessionId.current, { endedAt: new Date().toISOString(), ...stats.current })
     nav('/summary', { replace: true, state: { sessionId: sessionId.current } })
   }
@@ -81,7 +89,8 @@ export default function Session() {
           deckId: deck.id,
           at: new Date().toISOString(),
           memo: draft.memo || undefined,
-          values: draft.values,
+          // 誰の答えか分かるように名前を付けて保存
+          values: draft.values?.map((v, i) => (v && people[i] ? `${people[i]}: ${v}` : v)),
           result: draft.result,
         }
         saveAnswer(rec)

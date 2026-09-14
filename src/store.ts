@@ -72,7 +72,8 @@ export const useStore = create<State>()(
           }
           return { answers: [...s.answers, a] }
         }),
-      startSession: (rec) => set((s) => ({ sessions: [...s.sessions, rec] })),
+      startSession: (rec) =>
+        set((s) => (s.sessions.some((x) => x.id === rec.id) ? s : { sessions: [...s.sessions, rec] })),
       updateSession: (id, patch) =>
         set((s) => ({
           sessions: s.sessions.map((x) => (x.id === id ? { ...x, ...patch } : x)),

@@ -9,6 +9,23 @@ function shuffle<T>(arr: T[]): T[] {
   return a
 }
 
+/** レベルごとに均等配分で target 枚まで取る。足りないレベルは他レベルの余りで補う */
+function pickByLevel(cards: Card[], levels: Level[], target: number): Card[] {
+  const byLevel = new Map<Level, Card[]>()
+  for (const lv of levels) byLevel.set(lv, [])
+  for (const c of cards) byLevel.get(c.level)?.push(c)
+  const quota = Math.ceil(target / Math.max(levels.length, 1))
+  const picked: Card[] = []
+  const leftovers: Card[] = []
+  for (const lv of [...levels].sort((a, b) => a - b)) {
+    const list = byLevel.get(lv)!
+    picked.push(...list.slice(0, quota))
+    leftovers.push(...list.slice(quota))
+  }
+  if (picked.length < target) picked.push(...leftovers.slice(0, target - picked.length))
+  return picked.slice(0, target)
+}
+
 /**
  * セッションの出題キューを作る。
  * - テーマ / レベル / 16+ でフィルタ
@@ -32,26 +49,13 @@ export function buildQueue(
   let picked: Card[]
 
   if (cfg.gradient) {
-    // レベルごとに均等配分。足りないレベルは他レベルから補う
-    const byLevel = new Map<Level, Card[]>()
-    for (const lv of cfg.levels) byLevel.set(lv, [])
-    for (const c of shuffle(fresh)) byLevel.get(c.level)!.push(c)
-    for (const c of shuffle(pool.filter((c) => seen.includes(c.id)))) byLevel.get(c.level)!.push(c)
-
-    const levels = [...cfg.levels].sort((a, b) => a - b)
-    const quota = Math.ceil(target / levels.length)
-    picked = []
-    const leftovers: Card[] = []
-    for (const lv of levels) {
-      const list = byLevel.get(lv)!
-      picked.push(...list.slice(0, quota))
-      leftovers.push(...list.slice(quota))
-    }
+    // 未出題を優先し、足りない分だけ既出から補う。どちらもレベル均等に取ってから並べ替える
+    picked = pickByLevel(shuffle(fresh), cfg.levels, target)
     if (picked.length < target) {
-      picked.push(...leftovers.slice(0, target - picked.length))
-      picked.sort((a, b) => a.level - b.level)
+      const seenCards = shuffle(pool.filter((c) => seen.includes(c.id)))
+      picked.push(...pickByLevel(seenCards, cfg.levels, target - picked.length))
     }
-    picked = picked.slice(0, target)
+    picked.sort((a, b) => a.level - b.level)
   } else {
     picked = shuffle(fresh)
     if (picked.length < target) {

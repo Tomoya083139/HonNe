@@ -81,7 +81,7 @@ export default function Library() {
         <div className="list">
           {sessions.length === 0 && <p className="muted">まだセッションがありません。</p>}
           {sessions
-            .slice()
+            .filter((s) => s.answered + s.passed > 0)
             .reverse()
             .map((s) => {
               const d = findDeck(s.deckId)
