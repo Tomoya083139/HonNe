@@ -66,11 +66,13 @@ export function buildQueue(
   return picked
 }
 
-export function countAvailable(deck: Deck, cfg: SessionConfig, adult: boolean) {
-  return deck.cards.filter(
+/** 条件に合うカード数と、そのうち既出の数 */
+export function countAvailable(deck: Deck, cfg: SessionConfig, adult: boolean, seen: string[] = []) {
+  const pool = deck.cards.filter(
     (c) =>
       cfg.levels.includes(c.level) &&
       (cfg.themes.length === 0 || c.themes.some((t) => cfg.themes.includes(t))) &&
       (adult || c.rating !== '16+'),
-  ).length
+  )
+  return { total: pool.length, seen: pool.filter((c) => seen.includes(c.id)).length }
 }

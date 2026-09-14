@@ -25,7 +25,7 @@ export default function DeckSetup() {
   if (!deck) return <div className="shell">デッキが見つかりません</div>
 
   const cfg: SessionConfig = { deckId: deck.id, themes, levels, count, gradient }
-  const available = countAvailable(deck, cfg, adult)
+  const available = countAvailable(deck, cfg, adult, seen)
   const levelsInDeck = [...new Set(deck.cards.map((c) => c.level))].sort() as Level[]
 
   const toggle = <T,>(list: T[], v: T) => (list.includes(v) ? list.filter((x) => x !== v) : [...list, v])
@@ -95,7 +95,7 @@ export default function DeckSetup() {
       <div className="spacer" />
 
       <p className="small muted" style={{ textAlign: 'center' }}>
-        条件に合うカード {available} 枚（うち既出 {seen.length} 枚）
+        条件に合うカード {available.total} 枚（うち既出 {available.seen} 枚）
         {seen.length > 0 && (
           <>
             {' '}
@@ -108,7 +108,7 @@ export default function DeckSetup() {
       <button
         className="btn primary block"
         style={{ background: deck.color }}
-        disabled={available === 0 || levels.length === 0}
+        disabled={available.total === 0 || levels.length === 0}
         onClick={() => nav('/session', { state: cfg })}
       >
         はじめる

@@ -115,7 +115,11 @@ export default function Session() {
     }
     switch (card?.type) {
       case 'guess':
-        return (
+        return deck.mode === 'couple' ? (
+          <>
+            <b>{turn.second}</b> が <b>{turn.first}</b> の答えを予想
+          </>
+        ) : (
           <>
             <b>{turn.first}</b> の答えをみんなで予想
           </>
