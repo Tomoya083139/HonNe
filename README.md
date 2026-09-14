@@ -8,7 +8,7 @@
 - 全 775 問（日英併記）、深さ 4 レベル（ライト → ミディアム → ディープ → 本音）を自動で深めていく出題
 - お気に入り・メモ・履歴はブラウザ内（localStorage）にのみ保存。ログイン不要
 
-設計資料: [docs/01_reference_analysis.md](docs/01_reference_analysis.md) / [docs/02_honne_design.md](docs/02_honne_design.md)
+設計資料: [docs/01_reference_analysis.md](docs/01_reference_analysis.md) / [docs/02_honne_design.md](docs/02_honne_design.md) / 技術レポート: [docs/03_technical_report.md](docs/03_technical_report.md)
 
 ## 開発
 
