@@ -6,7 +6,7 @@ import { countAvailable } from '../session/build'
 import { useStore } from '../store'
 import type { Level, SessionConfig } from '../types'
 
-const COUNTS = [5, 10, 20, 0]
+const COUNTS = [5, 10, 20, 30, 0]
 const EMPTY: string[] = []
 
 export default function DeckSetup() {
