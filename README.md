@@ -19,9 +19,17 @@ npm run validate   # 質問 JSON の整合性チェック
 npm run build      # dist/ に出力
 ```
 
-## デプロイ（Netlify）
+## デプロイ
 
-リポジトリを Netlify に接続するだけで `netlify.toml` の設定（`npm run build` → `dist`）でデプロイされます。
+### Vercel
+
+1. https://vercel.com/new で GitHub リポジトリを Import
+2. Framework Preset は **Vite** が自動検出されます（`vercel.json` に設定済み: `npm run build` → `dist`、SPA リライト、Service Worker のキャッシュ制御）
+3. Deploy を押すだけ。以降は `main` への push で自動デプロイ
+
+### Netlify
+
+リポジトリを接続するだけで `netlify.toml` の設定（`npm run build` → `dist`）でデプロイされます。
 
 ## 質問を追加する
 
