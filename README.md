@@ -64,3 +64,13 @@ src/
 ├─ pages/                                 Onboarding / Home / DeckSetup / Session / Summary / Library / Settings
 └─ store.ts                               zustand + localStorage
 ```
+
+## ライセンス
+
+| 対象 | ライセンス |
+|---|---|
+| ソースコード（React・出題ロジック・スタイル・スクリプト・ドキュメント） | [MIT](LICENSE) |
+| 質問コンテンツ（`src/content/decks/**/*.json` の全 775 問と英訳・デッキ名、`themes.ts` のラベル） | [CC BY-NC 4.0](LICENSE-CONTENT.md) |
+
+アプリの作りは自由に参考にしていただけます。質問文は表示（出典の明記）と非営利が条件です。
+営利目的でのご利用は Issue でご相談ください。
