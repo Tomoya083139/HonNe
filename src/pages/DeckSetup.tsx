@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import { FriendsEditor } from '../components/FriendsEditor'
 import { findDeck } from '../content'
 import { LEVEL_LABEL, THEMES } from '../content/themes'
 import { countAvailable } from '../session/build'
@@ -16,6 +17,8 @@ export default function DeckSetup() {
   const adult = useStore((s) => s.profile.adult)
   const seen = useStore((s) => s.seen[id ?? '']) ?? EMPTY
   const resetSeen = useStore((s) => s.resetSeen)
+  const friends = useStore((s) => s.profile.friends)
+  const setProfile = useStore((s) => s.setProfile)
 
   const [themes, setThemes] = useState<string[]>([])
   const [levels, setLevels] = useState<Level[]>([1, 2, 3, 4])
@@ -42,6 +45,13 @@ export default function DeckSetup() {
       <p className="muted" style={{ marginTop: 0 }}>
         {deck.tagline.ja}
       </p>
+
+      {deck.mode === 'friends' && (
+        <div className="section">
+          <h4>参加者</h4>
+          <FriendsEditor value={friends} onChange={(v) => setProfile({ friends: v })} />
+        </div>
+      )}
 
       <div className="section">
         <h4>テーマ（未選択 = すべて）</h4>

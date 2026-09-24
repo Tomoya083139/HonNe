@@ -83,7 +83,7 @@ export default function Onboarding() {
           )}
           {mode === 'friends' && (
             <div className="section stack">
-              <h4>参加者の名前（ニックネームでOK・任意）</h4>
+              <h4>参加者</h4>
               <FriendsEditor value={friends} onChange={setFriends} />
             </div>
           )}

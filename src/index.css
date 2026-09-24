@@ -597,6 +597,12 @@ a {
   flex-direction: column;
   gap: 6px;
 }
+.fieldlabel {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+}
 .field label {
   font-size: 13px;
   font-weight: 700;
